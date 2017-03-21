@@ -6,3 +6,4 @@ using System.Runtime.CompilerServices;
 
 // Ensure the other projects can see the internal helpers
 [assembly: InternalsVisibleTo("ImageSharp.Drawing")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
