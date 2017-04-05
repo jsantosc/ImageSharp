@@ -10,7 +10,13 @@ namespace ImageSharp.Tests
     using System.Numerics;
     using Xunit.Abstractions;
 
-    public abstract partial class TestImageProvider<TColor>
+    public interface ITestImageProvider
+    {
+        PixelTypes PixelType { get; }
+        ImagingTestCaseUtility Utility { get; }
+    }
+
+    public abstract partial class TestImageProvider<TColor> : ITestImageProvider
         where TColor : struct, IPixel<TColor>
     {
 
@@ -76,6 +82,10 @@ namespace ImageSharp.Tests
                 int top = 0;
                 int bottom = pixels.Height / 2;
                 int stride = pixels.Width / 12;
+                if (stride == 0)
+                {
+                    stride = 1;
+                }
                 TColor[] c = {
                         NamedColors<TColor>.HotPink,
                         NamedColors<TColor>.Blue
@@ -107,6 +117,10 @@ namespace ImageSharp.Tests
                 int top = 0;
                 int bottom = pixels.Height / 2;
                 int stride = pixels.Width / 6;
+                if (stride == 0)
+                {
+                    stride = 1;
+                }
                 TColor[] c = {
                         NamedColors<TColor>.Black,
                         NamedColors<TColor>.White

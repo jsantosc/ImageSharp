@@ -5,6 +5,7 @@
 
 namespace ImageSharp.Tests
 {
+    using System.Collections.Generic;
     using System.IO;
 
     using Xunit;
@@ -62,43 +63,25 @@ namespace ImageSharp.Tests
             }
         }
 
-        [Fact]
-        public void QuantizeImageShouldPreserveMaximumColorPrecision()
+        public static TheoryData<Quantization> QuantizationTypes = new TheoryData<Quantization> {
+            { Quantization.Octree },
+            { Quantization.Wu },
+            { Quantization.Palette }
+        };
+
+        [Theory]
+        [WithTestPatternImages(nameof(QuantizationTypes), 100, 100, PixelTypes.StandardImageClass)]
+        public void QuantizeImageShouldPreserveMaximumColorPrecision<TColor>(TestImageProvider<TColor> provider, Quantization quantization)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Quantize");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> srcImage = provider.GetImage())
             {
-                using (Image srcImage = file.CreateImage())
-                {
-                    using (Image image = new Image(srcImage))
-                    {
-                        using (FileStream output = File.OpenWrite($"{path}/Octree-{file.FileName}"))
-                        {
-                            image.Quantize(Quantization.Octree)
-                                .Save(output, image.CurrentImageFormat);
 
-                        }
-                    }
-
-                    using (Image image = new Image(srcImage))
+                srcImage.Quantize(quantization)
+                    .DebugSave(provider, new
                     {
-                        using (FileStream output = File.OpenWrite($"{path}/Wu-{file.FileName}"))
-                        {
-                            image.Quantize(Quantization.Wu)
-                                .Save(output, image.CurrentImageFormat);
-                        }
-                    }
-
-                    using (Image image = new Image(srcImage))
-                    {
-                        using (FileStream output = File.OpenWrite($"{path}/Palette-{file.FileName}"))
-                        {
-                            image.Quantize(Quantization.Palette)
-                                .Save(output, image.CurrentImageFormat);
-                        }
-                    }
-                }
+                        quantization
+                    });
             }
         }
 

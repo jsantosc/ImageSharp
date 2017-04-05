@@ -71,7 +71,7 @@
                 if (b > segmentThreshold) { diffPixels++; }
             }
 
-            return diffPixels / (scalingFactor * scalingFactor);
+            return (float)diffPixels / (float)(scalingFactor * scalingFactor);
         }
 
         private static Fast2DArray<byte> GetDifferences<TColorA, TColorB>(Image<TColorA> source, Image<TColorB> target, int scalingFactor)
@@ -86,7 +86,8 @@
             {
                 for (int x = 0; x < scalingFactor; x++)
                 {
-                    differences[x, y] = (byte)Math.Abs(firstGray[x, y] - secondGray[x, y]);
+                    var diff = firstGray[x, y] - secondGray[x, y];
+                    differences[x, y] = (byte)Math.Abs(diff);
                 }
             }
 
