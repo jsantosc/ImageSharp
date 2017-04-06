@@ -9,20 +9,17 @@ namespace ImageSharp.Tests
 
     using Xunit;
 
-    public class SepiaTest : FileTestBase
+    public class SepiaTest
     {
-        [Fact]
-        public void ImageShouldApplySepiaFilter()
+        [Theory]
+        [WithTestPatternImages(320, 240, PixelTypes.Color)]
+        public void ImageShouldApplySepiaFilter<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = CreateOutputDirectory("Sepia");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{file.FileName}"))
-                {
-                    image.Sepia().Save(output);
-                }
+                image.Sepia()
+                    .DebugSave(provider);
             }
         }
     }
