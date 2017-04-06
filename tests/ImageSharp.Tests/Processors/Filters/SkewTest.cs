@@ -9,7 +9,7 @@ namespace ImageSharp.Tests
 
     using Xunit;
 
-    public class SkewTest : FileTestBase
+    public class SkewTest
     {
         public static readonly TheoryData<float, float> SkewValues
         = new TheoryData<float, float>
@@ -19,21 +19,20 @@ namespace ImageSharp.Tests
         };
 
         [Theory]
-        [MemberData(nameof(SkewValues))]
-        public void ImageShouldApplySkewSampler(float x, float y)
+        [WithTestPatternImages(nameof(SkewValues), 640, 480, PixelTypes.StandardImageClass)]
+        public void ImageShouldApplySkewSampler<TColor>(TestImageProvider<TColor> provider, float x, float y)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Skew");
-
             // Matches live example
             // http://www.w3schools.com/css/tryit.asp?filename=trycss3_transform_skew
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(x + "-" + y);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Skew(x, y).Save(output);
-                }
+                image.Skew(x, y)
+                    .DebugSave(provider, new
+                    {
+                        x,
+                        y
+                    });
             }
         }
     }
