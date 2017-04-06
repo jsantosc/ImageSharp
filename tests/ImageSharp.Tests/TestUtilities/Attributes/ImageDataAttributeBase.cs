@@ -36,7 +36,6 @@ namespace ImageSharp.Tests
         public override IEnumerable<object[]> GetData(MethodInfo testMethod)
         {
             IEnumerable<object[]> addedRows = Enumerable.Empty<object[]>();
-            Console.WriteLine("getting data");
             if (!string.IsNullOrWhiteSpace(MemberName))
             {
                 var type = this.MemberType ?? testMethod.DeclaringType;
