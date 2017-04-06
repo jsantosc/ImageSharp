@@ -9,69 +9,53 @@ namespace ImageSharp.Tests
 
     using Xunit;
 
-    public class VignetteTest : FileTestBase
+    public class VignetteTest
     {
-        [Fact]
-        public void ImageShouldApplyVignetteFilter()
+        [Theory]
+        [WithTestPatternImages(640, 480, PixelTypes.StandardImageClass)]
+        public void ImageShouldApplyVignetteFilter<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Vignette");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{file.FileName}"))
-                {
-                    image.Vignette().Save(output);
-                }
+                image.Vignette()
+                     .DebugSave(provider);
             }
         }
 
-        [Fact]
-        public void ImageShouldApplyVignetteFilterColor()
+        [Theory]
+        [WithTestPatternImages(640, 480, PixelTypes.StandardImageClass)]
+        public void ImageShouldApplyVignetteFilterColor<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Vignette");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName("Color");
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Vignette(Color.HotPink).Save(output);
-                }
+                image.Vignette(NamedColors<TColor>.HotPink)
+                     .DebugSave(provider);
             }
         }
 
-        [Fact]
-        public void ImageShouldApplyVignetteFilterRadius()
+        [Theory]
+        [WithTestPatternImages(640, 480, PixelTypes.StandardImageClass)]
+        public void ImageShouldApplyVignetteFilterRadius<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Vignette");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName("Radius");
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Vignette(image.Width / 4F, image.Height / 4F).Save(output);
-                }
+                image.Vignette(image.Width / 4F, image.Height / 4F)
+                     .DebugSave(provider);
             }
         }
 
-        [Fact]
-        public void ImageShouldApplyVignetteFilterInBox()
+        [Theory]
+        [WithTestPatternImages(640, 480, PixelTypes.StandardImageClass)]
+        public void ImageShouldApplyVignetteFilterInBox<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Vignette");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName("InBox");
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Vignette(new Rectangle(image.Width / 4, image.Height / 4, image.Width / 2, image.Height / 2))
-                        .Save(output);
-                }
+                image.Vignette(new Rectangle(image.Width / 4, image.Height / 4, image.Width / 2, image.Height / 2))
+                     .DebugSave(provider);
             }
         }
     }
