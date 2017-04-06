@@ -5,6 +5,8 @@
 
 namespace ImageSharp.Tests
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
 
     using ImageSharp.Dithering;
@@ -14,89 +16,47 @@ namespace ImageSharp.Tests
 
     public class DitherTest : FileTestBase
     {
-        public static readonly TheoryData<string, IOrderedDither> Ditherers = new TheoryData<string, IOrderedDither>
-        {
-            { "Ordered", new Ordered() },
-            { "Bayer", new Bayer() }
+        public static Dictionary<string, Func<IOrderedDither>> DitherersFunc = new Dictionary<string, Func<IOrderedDither>>(StringComparer.OrdinalIgnoreCase) {
+             { "Ordered", ()=>new Ordered() },
+            { "Bayer", ()=>new Bayer() }
         };
 
-        public static readonly TheoryData<string, IErrorDiffuser> ErrorDiffusers = new TheoryData<string, IErrorDiffuser>
+        public static readonly TheoryData<string> Ditherers = new TheoryData<string>
         {
-            { "Atkinson", new Atkinson() },
-            { "Burks", new Burks() },
-            { "FloydSteinberg", new FloydSteinberg() },
-            { "JarvisJudiceNinke", new JarvisJudiceNinke() },
-            { "Sierra2", new Sierra2() },
-            { "Sierra3", new Sierra3() },
-            { "SierraLite", new SierraLite() },
-            { "Stucki", new Stucki() },
+            { "Ordered"},
+            { "Bayer" }
         };
 
         [Theory]
-        [MemberData(nameof(Ditherers))]
-        public void ImageShouldApplyDitherFilter(string name, IOrderedDither ditherer)
+        [WithTestPatternImages(nameof(Ditherers), 640, 480, PixelTypes.Color)]
+        public void ImageShouldApplyDitherFilter<TColor>(TestImageProvider<TColor> provider, string name)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Dither", "Dither");
+            IOrderedDither ditherer = DitherersFunc[name]();
 
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(name);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Dither(ditherer).Save(output);
-                }
+                image.Dither(ditherer)
+                    .DebugSave(provider, new
+                    {
+                        ditherer = name
+                    });
             }
         }
 
         [Theory]
-        [MemberData(nameof(Ditherers))]
-        public void ImageShouldApplyDitherFilterInBox(string name, IOrderedDither ditherer)
+        [WithTestPatternImages(nameof(Ditherers), 640, 480, PixelTypes.Color)]
+        public void ImageShouldApplyDitherFilterInBox<TColor>(TestImageProvider<TColor> provider, string name)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Dither", "Dither");
-
-            foreach (TestFile file in Files)
+            IOrderedDither ditherer = DitherersFunc[name]();
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName($"{name}-InBox");
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Dither(ditherer, new Rectangle(10, 10, image.Width / 2, image.Height / 2)).Save(output);
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ErrorDiffusers))]
-        public void ImageShouldApplyDiffusionFilter(string name, IErrorDiffuser diffuser)
-        {
-            string path = this.CreateOutputDirectory("Dither", "Diffusion");
-
-            foreach (TestFile file in Files)
-            {
-                string filename = file.GetFileName(name);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Dither(diffuser, .5F).Save(output);
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ErrorDiffusers))]
-        public void ImageShouldApplyDiffusionFilterInBox(string name, IErrorDiffuser diffuser)
-        {
-            string path = this.CreateOutputDirectory("Dither", "Diffusion");
-
-            foreach (TestFile file in Files)
-            {
-                string filename = file.GetFileName($"{name}-InBox");
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Dither(diffuser, .5F, new Rectangle(10, 10, image.Width / 2, image.Height / 2)).Save(output);
-                }
+                image.Dither(ditherer, new Rectangle(100, 100, image.Width / 2, image.Height / 2))
+                    .DebugSave(provider, new
+                    {
+                        ditherer = name
+                    });
             }
         }
     }
