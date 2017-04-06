@@ -161,6 +161,12 @@ namespace ImageSharp.Tests
                 int bottom = pixels.Height;
                 int height = (int)Math.Ceiling(pixels.Height / 6f);
 
+                int maxTop = (top - bottom);
+                int width = (left - right);
+                maxTop = maxTop < 0 ? 0 : maxTop;
+                height = height > 0 ? height : 1;
+                width = width > 0 ? width : 1;
+
                 Vector4 red = Color.Red.ToVector4(); // use real color so we can see har it translates in the test pattern
                 Vector4 green = Color.Green.ToVector4(); // use real color so we can see har it translates in the test pattern
                 Vector4 blue = Color.Blue.ToVector4(); // use real color so we can see har it translates in the test pattern
@@ -178,12 +184,15 @@ namespace ImageSharp.Tests
                         pixels[x, y] = c;
                     }
                     topBand = topBand + height;
+
+                    topBand = topBand > maxTop ? maxTop : topBand;
                     c.PackFromVector4(green);
                     for (int y = topBand; y < topBand + height; y++)
                     {
                         pixels[x, y] = c;
                     }
                     topBand = topBand + height;
+                    topBand = topBand > maxTop ? maxTop : topBand;
                     c.PackFromVector4(blue);
                     for (int y = topBand; y < bottom; y++)
                     {
@@ -204,7 +213,12 @@ namespace ImageSharp.Tests
                 int top = pixels.Height / 2;
                 int bottom = pixels.Height;
 
-                int pixelCount = left * top;
+                int height = (top - bottom);
+                int width = (left - right);
+                height = height > 0 ? height : 1;
+                width = width > 0 ? width : 1;
+
+                int pixelCount = width * height;
                 uint stepsPerPixel = (uint)(uint.MaxValue / pixelCount);
                 TColor c = default(TColor);
                 Color t = new Color(0);

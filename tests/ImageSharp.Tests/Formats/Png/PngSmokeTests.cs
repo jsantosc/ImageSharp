@@ -38,9 +38,9 @@ namespace ImageSharp.Tests.Formats.Png
             }
         }
 
-        [Theory(Skip = "failing see https://github.com/JimBobSquarePants/ImageSharp/issues/165")]
-        [WithSolidFilledImages(10, 10, 255,0,0, PixelTypes.StandardImageClass)]
-        public void CanSaveIndexedPng<TColor>(TestImageProvider<TColor> provider)
+        [Theory]
+        [WithSolidFilledImages(100, 100, 126, 0, 0, PixelTypes.StandardImageClass)]
+        public void CanSaveIndexedPngAlphaBug<TColor>(TestImageProvider<TColor> provider)
             where TColor : struct, IPixel<TColor>
         {
             // does saving a file then repoening mean both files are identical???
@@ -50,14 +50,46 @@ namespace ImageSharp.Tests.Formats.Png
                 image.MetaData.Quality = 256;
                 image.Save(ms, new PngEncoder());
                 ms.Position = 0;
-                image.DebugSave(provider, extension: "bmp");
+                image.DebugSave(provider, extension: "png");
 
                 using (Image<TColor> img2 = Image.Load<TColor>(ms, new PngDecoder()))
                 {
-                    
-                    img2.DebugSave(provider, new { decoded = true }, extension: "bmp");
-                    Assert.Equal(img2.Pixels[0], image.Pixels[0]);
-                    //ImageComparer.CheckSimilarity(image, img2);
+                    img2.DebugSave(provider, new { decoded = true }, extension: "png");
+
+                    using (PixelAccessor<TColor> accessor1 = image.Lock())
+                    using (PixelAccessor<TColor> accessor2 = img2.Lock())
+                    {
+                        for (int y = 0; y < image.Height; y++)
+                        {
+                            for (int x = 0; x < image.Width; x++)
+                            {
+                                Assert.Equal(accessor1[x, y], accessor2[x, y]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [WithTestPatternImages(10, 2, PixelTypes.StandardImageClass)]
+        public void CanSaveIndexedPng<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
+        {
+            // does saving a file then repoening mean both files are identical???
+            using (Image<TColor> image = provider.GetImage())
+            using (MemoryStream ms = new MemoryStream())
+            {
+                image.DebugSave(provider, new { raw = true }, extension: "png");
+                image.MetaData.Quality = 256;
+                image.Save(ms, new PngEncoder());
+                ms.Position = 0;
+                image.DebugSave(provider, extension: "png");
+
+                using (Image<TColor> img2 = Image.Load<TColor>(ms, new PngDecoder()))
+                {
+                    img2.DebugSave(provider, new { decoded = true }, extension: "png");
+                    ImageComparer.CheckSimilarity(image, img2);
                 }
             }
         }
