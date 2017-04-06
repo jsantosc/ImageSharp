@@ -27,30 +27,62 @@ namespace ImageSharp.Tests
         }
 
         [Theory]
-        [WithFile(TestImages.Jpeg.Baseline.Snake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio420)]
-        [WithFile(TestImages.Jpeg.Baseline.Lake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio420)]
-        [WithFile(TestImages.Jpeg.Baseline.Snake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio444)]
-        [WithFile(TestImages.Jpeg.Baseline.Lake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio444)]
-        public void LoadResizeSave<TColor>(TestImageProvider<TColor> provider, int quality, JpegSubsample subsample)
-            where TColor : struct, IPixel<TColor>
+        [WithBlankImages(1, 1, PixelTypes.All)]
+        public void WritesFileMarker<TColor>(TestImageProvider<TColor> provider)
+           where TColor : struct, IPixel<TColor>
         {
-            using (Image<TColor> image = provider.GetImage().Resize(new ResizeOptions { Size = new Size(150, 100), Mode = ResizeMode.Max }))
+            using (Image<TColor> image = provider.GetImage())
+            using (MemoryStream ms = new MemoryStream())
             {
-                image.MetaData.Quality = quality;
-                image.MetaData.ExifProfile = null; // Reduce the size of the file
-                JpegEncoder encoder = new JpegEncoder();
-                JpegEncoderOptions options = new JpegEncoderOptions { Subsample = subsample, Quality = quality };
+                image.Save(ms, new JpegEncoder());
 
-                provider.Utility.TestName += $"{subsample}_Q{quality}";
-                provider.Utility.SaveTestOutputFile(image, "png");
-                provider.Utility.SaveTestOutputFile(image, "jpg", encoder, options);
+                byte[] data = ms.ToArray().Take(11).ToArray();
+                byte[] expected = new byte[]
+                {
+                    0xff,
+                    0xd8,
+                    
+                    // Write the JFIF headers
+                    0xff,
+                    0xe0, // Application Marker
+                    0x00,
+                    0x10,
+                    0x4a, // J
+                    0x46, // F
+                    0x49, // I
+                    0x46, // F
+                    0x00, // = "JFIF",'\0'
+                };
+                Assert.Equal(expected, data);
             }
         }
 
+        // what exactly is this proving ???
+        //[Theory]
+        //[WithFile(TestImages.Jpeg.Baseline.Snake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio420)]
+        //[WithFile(TestImages.Jpeg.Baseline.Lake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio420)]
+        //[WithFile(TestImages.Jpeg.Baseline.Snake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio444)]
+        //[WithFile(TestImages.Jpeg.Baseline.Lake, PixelTypes.StandardImageClass, 75, JpegSubsample.Ratio444)]
+        //public void LoadResizeSave<TColor>(TestImageProvider<TColor> provider, int quality, JpegSubsample subsample)
+        //    where TColor : struct, IPixel<TColor>
+        //{
+        //    using (Image<TColor> image = provider.GetImage().Resize(new ResizeOptions { Size = new Size(150, 100), Mode = ResizeMode.Max }))
+        //    {
+        //        image.MetaData.Quality = quality;
+        //        image.MetaData.ExifProfile = null; // Reduce the size of the file
+        //        JpegEncoder encoder = new JpegEncoder();
+        //        JpegEncoderOptions options = new JpegEncoderOptions { Subsample = subsample, Quality = quality };
+
+        //        provider.Utility.TestName += $"{subsample}_Q{quality}";
+        //        provider.Utility.SaveTestOutputFile(image, "png");
+        //        provider.Utility.SaveTestOutputFile(image, "jpg", encoder, options);
+        //    }
+        //}
+
         [Theory]
-        [WithFileCollection(nameof(AllBmpFiles), PixelTypes.Color | PixelTypes.StandardImageClass | PixelTypes.Argb, JpegSubsample.Ratio420, 75)]
-        [WithFileCollection(nameof(AllBmpFiles), PixelTypes.Color | PixelTypes.StandardImageClass | PixelTypes.Argb, JpegSubsample.Ratio444, 75)]
-        public void OpenBmp_SaveJpeg<TColor>(TestImageProvider<TColor> provider, JpegSubsample subSample, int quality)
+        [WithTestPatternImages(320, 240, PixelTypes.Color | PixelTypes.StandardImageClass | PixelTypes.Argb, JpegSubsample.Ratio420, 75)]
+        [WithTestPatternImages(320, 240, PixelTypes.Color | PixelTypes.StandardImageClass | PixelTypes.Argb, JpegSubsample.Ratio444, 75)]
+        public void SaveTestPatternAsJpeg<TColor>(TestImageProvider<TColor> provider, JpegSubsample subSample, int quality)
            where TColor : struct, IPixel<TColor>
         {
             using (Image<TColor> image = provider.GetImage())
@@ -58,15 +90,17 @@ namespace ImageSharp.Tests
                 ImagingTestCaseUtility utility = provider.Utility;
                 utility.TestName += "_" + subSample + "_Q" + quality;
 
-                using (FileStream outputStream = File.OpenWrite(utility.GetTestOutputFileName("jpg")))
+                using (MemoryStream outputStream = new MemoryStream())
                 {
                     JpegEncoder encoder = new JpegEncoder();
 
                     image.Save(outputStream, encoder, new JpegEncoderOptions()
                     {
-                      Subsample = subSample,
-                      Quality = quality
+                        Subsample = subSample,
+                        Quality = quality
                     });
+
+                    outputStream.DebugSave(provider, extension: "jpg");
                 }
             }
         }
