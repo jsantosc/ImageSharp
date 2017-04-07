@@ -64,7 +64,7 @@ namespace ImageSharp.Processing.Processors
             // Get the range on the y-plane to choose from.
             IEnumerable<int> range = EnumerableExtensions.SteppedRange(minY, i => i < maxY, size);
 
-            using (PixelAccessor<TColor> targetPixels = new PixelAccessor<TColor>(source.Width, source.Height))
+            // using (PixelAccessor<TColor> targetPixels = new PixelAccessor<TColor>(source.Width, source.Height))
             {
                 using (PixelAccessor<TColor> sourcePixels = source.Lock())
                 {
@@ -101,13 +101,13 @@ namespace ImageSharp.Processing.Processors
                                     {
                                         for (int k = offsetX; k < offsetX + size && k < maxX; k++)
                                         {
-                                            targetPixels[k, l] = pixel;
+                                            sourcePixels[k, l] = pixel;
                                         }
                                     }
                                 }
                             });
 
-                    source.SwapPixelsBuffers(targetPixels);
+                    // source.SwapPixelsBuffers(targetPixels);
                 }
             }
         }

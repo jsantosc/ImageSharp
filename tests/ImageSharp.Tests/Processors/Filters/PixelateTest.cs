@@ -19,37 +19,79 @@ namespace ImageSharp.Tests
         };
 
         [Theory]
-        [MemberData(nameof(PixelateValues))]
-        public void ImageShouldApplyPixelateFilter(int value)
+        [WithTestPatternImages(nameof(PixelateValues), 320, 240, PixelTypes.Color)]
+        public void ImageShouldApplyPixelateFilter<TColor>(TestImageProvider<TColor> provider, int value)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = CreateOutputDirectory("Pixelate");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(value);
-                Image image = file.CreateImage();
+                image.Pixelate(value)
+                    .DebugSave(provider, new
+                    {
+                        size = value
+                    });
 
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
+                using (PixelAccessor<TColor> pixels = image.Lock())
                 {
-                    image.Pixelate(value)
-                          .Save(output);
+                    for (int y = 0; y < pixels.Height; y += value)
+                    {
+                        for (int x = 0; x < pixels.Width; x += value)
+                        {
+                            TColor source = pixels[x, y];
+                            // do all the pixeles in a size by size grid fi
+                            for (int pixY = y; pixY < y + value && pixY < pixels.Height; pixY++)
+                            {
+                                for (int pixX = x; pixX < x + value && pixX < pixels.Width; pixX++)
+                                {
+                                    Assert.Equal(source, pixels[pixX, pixY]);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
 
         [Theory]
-        [MemberData(nameof(PixelateValues))]
-        public void ImageShouldApplyPixelateFilterInBox(int value)
+        [WithTestPatternImages(nameof(PixelateValues), 320, 240, PixelTypes.Color)]
+        public void ImageShouldApplyPixelateFilterInBox<TColor>(TestImageProvider<TColor> provider, int value)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Pixelate");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> source = provider.GetImage())
+            using (Image<TColor> image = new Image<TColor>(source))
             {
-                string filename = file.GetFileName(value + "-InBox");
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
+                Rectangle rect = new Rectangle(image.Width/4, image.Height / 4, image.Width / 2, image.Height / 2);
+
+                image.Pixelate(value, rect)
+                    .DebugSave(provider, new
+                    {
+                        size = value
+                    });
+
+                using (PixelAccessor<TColor> pixels = image.Lock())
+                using (PixelAccessor<TColor> sourcePixels = source.Lock())
                 {
-                    image.Pixelate(value, new Rectangle(10, 10, image.Width / 2, image.Height / 2)).Save(output);
+                    for (int y = 0; y < pixels.Height; y++)
+                    {
+                        for (int x = 0; x < pixels.Width; x++)
+                        {
+                            var tx = x;
+                            var ty = y;
+                            TColor sourceColor = sourcePixels[tx, ty];
+                            if (rect.Contains(tx, ty))
+                            {
+                                var sourceX = tx - ((tx - rect.Left) % value) + (value / 2);
+                                var sourceY = ty - ((ty - rect.Top) % value) + (value / 2);
+
+                                // not in rect use the souce image color
+                                sourceColor = pixels[sourceX, sourceY];
+                            }
+
+
+                            Assert.Equal(sourceColor, pixels[tx, ty]);
+
+                        }
+                    }
                 }
             }
         }
