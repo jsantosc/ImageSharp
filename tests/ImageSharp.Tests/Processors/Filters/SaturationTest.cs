@@ -19,19 +19,15 @@ namespace ImageSharp.Tests
         };
 
         [Theory]
-        [MemberData(nameof(SaturationValues))]
-        public void ImageShouldApplySaturationFilter(int value)
+        [WithTestPatternImages(nameof(SaturationValues), 324, 240, PixelTypes.Color)]
+        public void ImageShouldApplySaturationFilter<TColor>(TestImageProvider<TColor> provider, int value)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = CreateOutputDirectory("Saturation");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(value);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
-                {
-                    image.Saturation(value).Save(output);
-                }
+                image
+                    .Saturation(value)
+                    .DebugSave(provider, new { satuation = value });
             }
         }
     }
