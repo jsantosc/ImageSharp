@@ -9,7 +9,7 @@ namespace ImageSharp.Tests
     using Processing;
     using Xunit;
 
-    public class RotateTest : FileTestBase
+    public class RotateTest 
     {
         public static readonly TheoryData<float> RotateFloatValues
             = new TheoryData<float>
@@ -28,36 +28,32 @@ namespace ImageSharp.Tests
         };
 
         [Theory]
-        [MemberData(nameof(RotateFloatValues))]
-        public void ImageShouldApplyRotateSampler(float value)
+        [WithTestPatternImages(nameof(RotateFloatValues), 320, 240, PixelTypes.Color)]
+        public void ImageShouldApplyRotateSampler<TColor>(TestImageProvider<TColor> provider, float value)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Rotate");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(value);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
+                image.Rotate(value)
+                .DebugSave(provider, new
                 {
-                    image.Rotate(value).Save(output);
-                }
+                    angle = value
+                });
             }
         }
 
         [Theory]
-        [MemberData(nameof(RotateEnumValues))]
-        public void ImageShouldApplyRotateSampler(RotateType value)
+        [WithTestPatternImages(nameof(RotateEnumValues), 320, 240, PixelTypes.Color)]
+        public void ImageShouldApplyRotateSampler<TColor>(TestImageProvider<TColor> provider, RotateType value)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Rotate");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(value);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
+                image.Rotate(value)
+                .DebugSave(provider, new
                 {
-                    image.Rotate(value).Save(output);
-                }
+                    type = value
+                });
             }
         }
     }
