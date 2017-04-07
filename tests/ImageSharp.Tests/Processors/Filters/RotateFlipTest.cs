@@ -9,7 +9,7 @@ namespace ImageSharp.Tests
     using Processing;
     using Xunit;
 
-    public class RotateFlipTest : FileTestBase
+    public class RotateFlipTest
     {
         public static readonly TheoryData<RotateType, FlipType> RotateFlipValues
             = new TheoryData<RotateType, FlipType>
@@ -22,19 +22,18 @@ namespace ImageSharp.Tests
         };
 
         [Theory]
-        [MemberData(nameof(RotateFlipValues))]
-        public void ImageShouldRotateFlip(RotateType rotateType, FlipType flipType)
+        [WithTestPatternImages(nameof(RotateFlipValues), 320, 240, PixelTypes.StandardImageClass)]
+        public void ImageShouldRotateFlip<TColor>(TestImageProvider<TColor> provider, RotateType rotateType, FlipType flipType)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("RotateFlip");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                string filename = file.GetFileName(rotateType + "-" + flipType);
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{filename}"))
+                image.RotateFlip(rotateType, flipType)
+                .DebugSave(provider, new
                 {
-                    image.RotateFlip(rotateType, flipType).Save(output);
-                }
+                    rotateType,
+                    flipType
+                });
             }
         }
     }

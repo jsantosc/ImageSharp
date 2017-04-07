@@ -11,18 +11,15 @@ namespace ImageSharp.Tests
 
     public class PolaroidTest : FileTestBase
     {
-        [Fact]
-        public void ImageShouldApplyPolaroidFilter()
+        [Theory]
+        [WithTestPatternImages(324, 240, PixelTypes.Color)]
+        public void ImageShouldApplyPolaroidFilter<TColor>(TestImageProvider<TColor> provider)
+            where TColor : struct, IPixel<TColor>
         {
-            string path = this.CreateOutputDirectory("Polaroid");
-
-            foreach (TestFile file in Files)
+            using (Image<TColor> image = provider.GetImage())
             {
-                using (Image image = file.CreateImage())
-                using (FileStream output = File.OpenWrite($"{path}/{file.FileName}"))
-                {
-                    image.Polaroid().Save(output);
-                }
+                image.Polaroid()
+                    .DebugSave(provider);
             }
         }
     }
