@@ -1,0 +1,80 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.3</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
+    <PackageReference Include="SixLabors.Core" Version="0.1.0-alpha0002" />
+    <PackageReference Include="System.Buffers" Version="4.3.0" />
+    <PackageReference Include="System.Memory" Version="4.4.0-preview2-25405-01" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0-preview2-25405-01" />
+    <PackageReference Include="System.Threading.Tasks.Parallel" Version="4.3.0" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0-preview1-25305-02" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Formats\Jpeg\Components\Block8x8F.Generated.cs">
+      <DependentUpon>Block8x8F.Generated.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="PixelFormats\Generated\PixelOperations{TPixel}.Generated.cs">
+      <DependentUpon>PixelOperations{TPixel}.Generated.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="PixelFormats\Generated\Rgba32.PixelOperations.Generated.cs">
+      <DependentUpon>Rgba32.PixelOperations.Generated.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="PixelFormats\PixelBlenders\DefaultPixelBlenders.Generated.cs">
+      <DependentUpon>DefaultPixelBlenders.Generated.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="PixelFormats\PixelBlenders\PorterDuffFunctions.Generated.cs">
+      <DependentUpon>PorterDuffFunctions.Generated.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Formats\Jpeg\Components\Block8x8F.Generated.tt">
+      <LastGenOutput>Block8x8F.Generated.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="PixelFormats\Generated\PixelOperations{TPixel}.Generated.tt">
+      <LastGenOutput>PixelOperations{TPixel}.Generated.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="PixelFormats\Generated\Rgba32.PixelOperations.Generated.tt">
+      <LastGenOutput>Rgba32.PixelOperations.Generated.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="PixelFormats\PixelBlenders\DefaultPixelBlenders.Generated.tt">
+      <LastGenOutput>DefaultPixelBlenders.Generated.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="PixelFormats\PixelBlenders\PorterDuffFunctions.Generated.tt">
+      <LastGenOutput>PorterDuffFunctions.Generated.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+</Project>
